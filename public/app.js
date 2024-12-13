@@ -1,17 +1,61 @@
-// State management
+// LaunchDarkly Client Initialization
+const ldClient = LDClient.initialize('66fdb5f5cefd6708575fe683', {
+    // Anonymous user object - you can customize this based on your needs
+    anonymous: true
+});
+
+// Header Image Management with LaunchDarkly
+const headerConfig = {
+    defaultImage: 'header-image.svg',
+    currentImage: null
+};
+
+// Initialize LaunchDarkly and header image
+ldClient.on('ready', () => {
+    // Get header image from LaunchDarkly feature flag
+    updateHeaderImageFromFlags();
+
+    // Set up flag change listener
+    ldClient.on('change', (flags) => {
+        if (flags.headerImage) {
+            updateHeaderImageFromFlags();
+        }
+    });
+});
+
+function updateHeaderImageFromFlags() {
+    const headerImageFlag = ldClient.variation('headerImage2', {
+        imagePath: headerConfig.defaultImage,
+        altText: 'Shop Header'
+    });
+
+    setHeaderImage(headerImageFlag, headerImageFlag.altText);
+}
+
+function setHeaderImage(imageUrl, altText = 'Shop Header') {
+    const headerContainer = document.getElementById('header-container');
+    if (!headerContainer) return;
+
+    // Create or update image element
+    let headerImage = headerContainer.querySelector('img');
+    if (!headerImage) {
+        headerImage = document.createElement('img');
+        headerContainer.appendChild(headerImage);
+    }
+
+    // Update image source and alt text
+    headerImage.src = imageUrl;
+    headerImage.alt = altText;
+    headerConfig.currentImage = imageUrl;
+}
+
+function getHeaderImage() {
+    return headerConfig.currentImage || headerConfig.defaultImage;
+}
+
+// Products Management
 let products = [];
 let cart = [];
-let currentFilter = 'all';
-
-// DOM Elements
-const productsContainer = document.getElementById('products-container');
-const cartSidebar = document.getElementById('cart-sidebar');
-const cartItems = document.getElementById('cart-items');
-const cartCount = document.querySelector('.cart-count');
-const cartTotal = document.getElementById('cart-total-amount');
-const searchInput = document.getElementById('search');
-const productModal = document.getElementById('product-modal');
-const filterButtons = document.querySelectorAll('.filter-btn');
 
 // Fetch products from API
 async function fetchProducts() {
@@ -26,6 +70,7 @@ async function fetchProducts() {
 
 // Render products
 function renderProducts() {
+    const productsContainer = document.getElementById('products-container');
     const filteredProducts = products.filter(product => {
         const matchesFilter = currentFilter === 'all' || product.category === currentFilter;
         const matchesSearch = product.name.toLowerCase().includes(searchInput.value.toLowerCase());
@@ -53,7 +98,7 @@ function renderProducts() {
     });
 }
 
-// Cart functions
+// Cart Management
 async function addToCart(productId) {
     try {
         const response = await fetch('http://localhost:3000/api/cart', {
@@ -83,6 +128,10 @@ async function removeFromCart(productId) {
 }
 
 function updateCart() {
+    const cartCount = document.querySelector('.cart-count');
+    const cartItems = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total-amount');
+
     cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
     
     cartItems.innerHTML = cart.map(item => `
@@ -99,12 +148,48 @@ function updateCart() {
     cartTotal.textContent = `$${total.toFixed(2)}`;
 }
 
-// Modal functions
+// Event Listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Cart toggle
+    const cartIcon = document.querySelector('.cart-icon');
+    const cartSidebar = document.getElementById('cart-sidebar');
+    const closeCart = document.querySelector('.close-cart');
+
+    cartIcon.addEventListener('click', () => {
+        cartSidebar.classList.add('open');
+    });
+
+    closeCart.addEventListener('click', () => {
+        cartSidebar.classList.remove('open');
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('input', renderProducts);
+
+    // Category filters
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            currentFilter = button.dataset.category;
+            renderProducts();
+        });
+    });
+
+    // Initialize
+    fetchProducts();
+});
+
+// Modal Management
 function showProductModal(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    const modalContent = document.querySelector('.modal-product-details');
+    const modal = document.getElementById('product-modal');
+    const modalContent = modal.querySelector('.modal-product-details');
+    
     modalContent.innerHTML = `
         <img src="${product.image}" alt="${product.name}" class="modal-product-image">
         <div class="modal-product-info">
@@ -115,48 +200,18 @@ function showProductModal(productId) {
         </div>
     `;
 
-    productModal.style.display = 'block';
+    modal.style.display = 'block';
 }
-
-// Event Listeners
-document.querySelector('.cart-icon').addEventListener('click', () => {
-    cartSidebar.classList.add('open');
-});
-
-document.querySelector('.close-cart').addEventListener('click', () => {
-    cartSidebar.classList.remove('open');
-});
-
-document.querySelector('.close-modal').addEventListener('click', () => {
-    productModal.style.display = 'none';
-});
-
-searchInput.addEventListener('input', renderProducts);
-
-filterButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        filterButtons.forEach(btn => btn.classList.remove('active'));
-        button.classList.add('active');
-        currentFilter = button.dataset.category;
-        renderProducts();
-    });
-});
-
-document.querySelector('.checkout-btn').addEventListener('click', () => {
-    if (cart.length > 0) {
-        alert('Thank you for your purchase! This is where the checkout process would begin.');
-        cart = [];
-        updateCart();
-        cartSidebar.classList.remove('open');
-    }
-});
 
 // Close modal when clicking outside
 window.addEventListener('click', (e) => {
-    if (e.target === productModal) {
-        productModal.style.display = 'none';
+    const modal = document.getElementById('product-modal');
+    if (e.target === modal) {
+        modal.style.display = 'none';
     }
 });
 
-// Initialize
-fetchProducts();
+// Close modal button
+document.querySelector('.close-modal').addEventListener('click', () => {
+    document.getElementById('product-modal').style.display = 'none';
+});

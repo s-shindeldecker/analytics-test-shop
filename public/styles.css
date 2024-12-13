@@ -19,6 +19,30 @@ header {
     z-index: 100;
 }
 
+.header-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.header-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.1), transparent);
+}
+
+.header-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
 nav {
     display: flex;
     justify-content: space-between;
@@ -26,26 +50,50 @@ nav {
     padding: 1rem 2rem;
     max-width: 1200px;
     margin: 0 auto;
+    background-color: #fff;
+    height: 70px;
+    position: relative;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
 
 .logo {
     font-size: 1.5rem;
     font-weight: 700;
     color: #333;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.logo:hover {
+    color: #2193b0;
 }
 
 .search-bar input {
-    padding: 0.5rem 1rem;
+    padding: 0.8rem 1.2rem;
     border: 1px solid #ddd;
     border-radius: 4px;
     width: 300px;
     font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.search-bar input:focus {
+    outline: none;
+    border-color: #2193b0;
+    box-shadow: 0 0 0 2px rgba(33, 147, 176, 0.1);
 }
 
 .cart-icon {
     position: relative;
     cursor: pointer;
     font-size: 1.5rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.cart-icon:hover {
+    background-color: rgba(0,0,0,0.05);
 }
 
 .cart-count {
@@ -57,16 +105,21 @@ nav {
     border-radius: 50%;
     padding: 0.2rem 0.5rem;
     font-size: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 main {
     max-width: 1200px;
-    margin: 80px auto 2rem;
+    margin: 290px auto 2rem;
     padding: 0 2rem;
 }
 
 .filters {
     margin: 2rem 0;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .category-filters {
@@ -84,11 +137,18 @@ main {
     transition: all 0.3s ease;
 }
 
+.filter-btn:hover {
+    border-color: #2193b0;
+    color: #2193b0;
+}
+
 .filter-btn.active {
-    background-color: #333;
+    background-color: #2193b0;
+    border-color: #2193b0;
     color: white;
 }
 
+/* Rest of the CSS remains the same */
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -133,7 +193,7 @@ main {
 .add-to-cart-btn {
     width: 100%;
     padding: 0.8rem;
-    background-color: #333;
+    background-color: #2193b0;
     color: white;
     border: none;
     border-radius: 0 0 8px 8px;
@@ -142,9 +202,10 @@ main {
 }
 
 .add-to-cart-btn:hover {
-    background-color: #444;
+    background-color: #1a7a8f;
 }
 
+/* Rest of the existing styles remain unchanged */
 .cart-sidebar {
     position: fixed;
     top: 0;
@@ -206,61 +267,33 @@ main {
     width: calc(100% - 2rem);
     margin: 1rem;
     padding: 1rem;
-    background-color: #333;
+    background-color: #2193b0;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-.product-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    z-index: 2000;
-}
-
-.modal-content {
-    position: relative;
-    background-color: white;
-    width: 90%;
-    max-width: 800px;
-    margin: 50px auto;
-    padding: 2rem;
-    border-radius: 8px;
-}
-
-.close-modal {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-
-.modal-product-details {
-    display: flex;
-    gap: 2rem;
-}
-
-.modal-product-image {
-    width: 300px;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 4px;
-}
-
-.modal-product-info {
-    flex-grow: 1;
+.checkout-btn:hover {
+    background-color: #1a7a8f;
 }
 
 @media (max-width: 768px) {
+    .header-image {
+        height: 150px;
+    }
+
+    nav {
+        height: 60px;
+        padding: 1rem;
+    }
+
+    main {
+        margin-top: 230px;
+        padding: 0 1rem;
+    }
+
     .search-bar input {
         width: 200px;
     }
@@ -270,12 +303,11 @@ main {
         right: -100%;
     }
     
-    .modal-product-details {
-        flex-direction: column;
+    .category-filters {
+        flex-wrap: wrap;
     }
     
-    .modal-product-image {
-        width: 100%;
-        height: 200px;
+    .filter-btn {
+        flex: 1 1 calc(50% - 0.5rem);
     }
 }
